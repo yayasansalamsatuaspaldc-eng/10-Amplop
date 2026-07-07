@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pemilihan Kel Alm - Santunan YASSA</title>
+<style>
+  :root{
+    --bg:#E0E5EC;
+    --shadow-out: 9px 9px 16px rgba(163,177,198,0.6), -9px -9px 16px rgba(255,255,255,0.8);
+    --shadow-in: inset 4px 4px 8px rgba(163,177,198,0.6), inset -4px -4px 8px rgba(255,255,255,0.8);
+    --blue:#2563eb;
+    --amber:#b45309;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; padding:16px; background:var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color:#334155;
+  }
+  .container{max-width:640px; margin:0 auto;}
+  h1{font-size:18px; font-weight:800; text-align:center; margin:8px 0 4px;}
+  .subtitle{text-align:center; font-size:12px; color:#64748b; margin-bottom:20px;}
+
+  .card{
+    background:var(--bg); border-radius:20px; box-shadow:var(--shadow-out);
+    padding:18px; margin-bottom:16px;
+  }
+  label{font-size:12px; font-weight:700; color:#475569; display:block; margin-bottom:6px;}
+  select, input[type=text]{
+    width:100%; padding:12px 14px; border:none; border-radius:14px;
+    background:var(--bg); box-shadow:var(--shadow-in); font-size:14px; color:#1e293b;
+    outline:none; appearance:none;
+  }
+
+  .section-title{
+    font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;
+    color:#64748b; margin: 18px 0 8px;
+  }
+  .section-title.lanjutan{color:var(--amber);}
+  .section-title.terpilih{color:var(--blue);}
+
+  .item{
+    display:flex; align-items:center; gap:12px;
+    padding:12px 14px; border-radius:14px; background:var(--bg);
+    box-shadow:var(--shadow-out); margin-bottom:8px; cursor:pointer;
+    transition: box-shadow .15s;
+  }
+  .item.selected{ box-shadow:var(--shadow-in); }
+  .item input[type=checkbox]{ width:20px; height:20px; flex-shrink:0; accent-color:var(--blue); }
+  .item .info{flex:1; min-width:0;}
+  .item .nama{font-weight:700; font-size:13.5px; color:#1e293b;}
+  .item .meta{font-size:11px; color:#64748b; margin-top:2px;}
+  .badge-lama{
+    font-size:10px; font-weight:800; padding:3px 8px; border-radius:8px;
+    background:#fef3c7; color:#92400e; white-space:nowrap;
+  }
+  .badge-baru{
+    font-size:10px; font-weight:800; padding:3px 8px; border-radius:8px;
+    background:#dcfce7; color:#166534; white-space:nowrap;
+  }
+  .badge-wajib{
+    font-size:10px; font-weight:800; padding:3px 8px; border-radius:8px;
+    background:#fee2e2; color:#991b1b; white-space:nowrap;
+  }
+  .item.wajib-amplop{ border-left:3px solid #dc2626; }
+
+  .item-terpilih{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 14px; border-radius:12px; background:var(--bg);
+    box-shadow:var(--shadow-in); margin-bottom:6px;
+  }
+  .item-terpilih .no{
+    font-weight:800; font-size:12px; color:var(--blue); width:20px; flex-shrink:0;
+  }
+  .item-terpilih .nama{ flex:1; font-weight:700; font-size:13px; color:#1e293b; }
+  .item-terpilih .hapus{
+    border:none; background:transparent; color:#dc2626; font-weight:800;
+    font-size:16px; cursor:pointer; padding:2px 8px; line-height:1;
+  }
+
+  .empty-msg{ text-align:center; font-size:12.5px; color:#94a3b8; padding:20px 0; }
+
+  button.submit-btn{
+    width:100%; padding:16px; border:none; border-radius:16px;
+    background:var(--bg); box-shadow:var(--shadow-out);
+    font-weight:800; font-size:14px; color:var(--blue); cursor:pointer;
+    margin-top:8px;
+  }
+  button.submit-btn:disabled{ color:#94a3b8; cursor:not-allowed; }
+  button.submit-btn:active:not(:disabled){ box-shadow:var(--shadow-in); }
+
+  .toast{
+    position:fixed; left:50%; bottom:24px; transform:translateX(-50%);
+    background:#1e293b; color:#fff; padding:12px 20px; border-radius:12px;
+    font-size:13px; max-width:90%; text-align:center; box-shadow:0 8px 20px rgba(0,0,0,0.25);
+    z-index:999; opacity:0; pointer-events:none; transition:opacity .2s;
+  }
+  .toast.show{opacity:1;}
+  .toast.error{background:#991b1b;}
+
+  .loading{ text-align:center; font-size:12.5px; color:#94a3b8; padding:16px 0; }
+  .spinner{
+    display:inline-block; width:16px; height:16px; border:2px solid #cbd5e1;
+    border-top-color: var(--blue); border-radius:50%; animation:spin .7s linear infinite;
+    margin-right:8px; vertical-align:middle;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🕊️ Pemilihan Kel Alm</h1>
+  <div class="subtitle" id="periodeLabel">Rotasi Santunan Amplop Bulanan</div>
+
+  <div class="card">
+    <label for="wilayahSelect">Pilih Wilayah</label>
+    <select id="wilayahSelect" onchange="onWilayahChange()">
+      <option value="">-- Pilih Wilayah --</option>
+    </select>
+  </div>
+
+  <div class="card" id="korwilCard" style="display:none;">
+    <label for="korwilInput">Nama Korwil (opsional, untuk jejak audit)</label>
+    <input type="text" id="korwilInput" placeholder="Contoh: Budi Santoso">
+  </div>
+
+  <div id="listArea"></div>
+
+  <div id="terpilihArea"></div>
+
+  <button class="submit-btn" id="submitBtn" onclick="submitPilihan()" disabled>
+    Pilih tepat 10 KK untuk submit
+  </button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===========================================================
+// GANTI DENGAN URL WEB APP APPS SCRIPT KAMU (diakhiri /exec)
+// Deploy > Manage deployments > (ikon copy di kolom Web app)
+// ===========================================================
+const API_URL = 'https://script.google.com/macros/s/GANTI_DENGAN_DEPLOYMENT_ID/exec';
+
+const JUMLAH_WAJIB = 10;
+let currentData = null;
+let selectedIds = new Set();
+let allItemsMap = {};
+
+function showToast(msg, isError){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(() => { t.className = 'toast'; }, 3500);
+}
+
+// ---------------------------------------------------------
+// HELPER: PANGGIL API (GANTI google.script.run)
+// ---------------------------------------------------------
+async function apiGet(action, params){
+  const url = new URL(API_URL);
+  url.searchParams.set('action', action);
+  Object.keys(params || {}).forEach(k => url.searchParams.set(k, params[k]));
+
+  const res = await fetch(url.toString(), { method: 'GET' });
+  const json = await res.json();
+  if (!json.success) throw new Error(json.message || 'Terjadi kesalahan.');
+  return json.data;
+}
+
+async function apiPost(action, payload){
+  // Content-Type text/plain WAJIB dipakai supaya browser tidak kirim
+  // preflight OPTIONS (Apps Script Web App tidak bisa menjawab OPTIONS).
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: action, payload: payload })
+  });
+  const json = await res.json();
+  if (!json.success) throw new Error(json.message || 'Gagal menyimpan.');
+  return json.data;
+}
+
+// ---------------------------------------------------------
+// INIT
+// ---------------------------------------------------------
+window.onload = function(){
+  apiGet('getWilayahOptions')
+    .then(populateWilayah)
+    .catch(onError);
+};
+
+function populateWilayah(list){
+  const sel = document.getElementById('wilayahSelect');
+  list.forEach(w => {
+    const opt = document.createElement('option');
+    opt.value = w; opt.textContent = w;
+    sel.appendChild(opt);
+  });
+}
+
+function onError(err){
+  showToast(err.message || 'Terjadi kesalahan.', true);
+  document.getElementById('listArea').innerHTML = '';
+}
+
+// ---------------------------------------------------------
+// SAAT WILAYAH DIPILIH
+// ---------------------------------------------------------
+function onWilayahChange(){
+  const wilayah = document.getElementById('wilayahSelect').value;
+  selectedIds = new Set();
+  allItemsMap = {};
+  document.getElementById('korwilCard').style.display = wilayah ? 'block' : 'none';
+
+  if (!wilayah){
+    document.getElementById('listArea').innerHTML = '';
+    updateCounterAndButton();
+    return;
+  }
+
+  document.getElementById('listArea').innerHTML = '<div class="loading"><span class="spinner"></span>Memuat data kel alm...</div>';
+  updateCounterAndButton();
+
+  apiGet('getDaftarKelAlm', { wilayah: wilayah })
+    .then(onDataLoaded)
+    .catch(onError);
+}
+
+function onDataLoaded(data){
+  currentData = data;
+  document.getElementById('periodeLabel').textContent =
+    'Periode: ' + (data.bulanTahunBerjalan || '') + ' — Wilayah ' + data.wilayah;
+  renderList();
+}
+
+// ---------------------------------------------------------
+// RENDER DAFTAR
+// ---------------------------------------------------------
+function renderList(){
+  const area = document.getElementById('listArea');
+  let html = '';
+
+  if (currentData.daftarUtama.length === 0 && currentData.daftarLanjutan.length === 0){
+    area.innerHTML = '<div class="card"><div class="empty-msg">Tidak ada kel alm aktif di wilayah ini.</div></div>';
+    return;
+  }
+
+  html += '<div class="section-title">Daftar Utama (belum pernah / paling lama tidak dapat)</div>';
+  html += '<div class="card">' + renderItems(currentData.daftarUtama) + '</div>';
+
+  if (currentData.tampilkanLanjutan && currentData.daftarLanjutan.length > 0){
+    html += '<div class="section-title lanjutan">Daftar Lanjutan (sudah pernah dapat — wajib amplop &amp; penggenap 10)</div>';
+    html += '<div class="card">' + renderItems(currentData.daftarLanjutan) + '</div>';
+  }
+
+  area.innerHTML = html;
+  renderTerpilih();
+}
+
+function renderItems(items){
+  items.forEach(k => { allItemsMap[k.id] = k; });
+
+  const sisaItems = items.filter(k => !selectedIds.has(k.id));
+
+  if (items.length === 0) return '<div class="empty-msg">Tidak ada data.</div>';
+  if (sisaItems.length === 0) return '<div class="empty-msg">Semua KK di bagian ini sudah dipilih.</div>';
+
+  return sisaItems.map(k => {
+    const wajibClass = k.wajibAmplop ? ' wajib-amplop' : '';
+    const badgeStatus = k.lastLabel
+      ? '<span class="badge-lama">Terakhir: ' + k.lastLabel + '</span>'
+      : '<span class="badge-baru">Belum pernah</span>';
+    const badgeWajib = k.wajibAmplop ? '<span class="badge-wajib">⚠ Wajib Amplop</span>' : '';
+    const badge = badgeWajib + badgeStatus;
+    const metaParts = [];
+    if (k.domisili) metaParts.push(k.domisili);
+    if (k.rekening) { metaParts.push('Rek: ' + k.bank + ' •••' + k.rekening.slice(-4)); }
+    else { metaParts.push('Tidak ada rekening (amplop)'); }
+
+    return '<div class="item' + wajibClass + '" onclick="toggleItem(&quot;' + k.id + '&quot;)">'
+      + '<input type="checkbox" onclick="event.stopPropagation(); toggleItem(&quot;' + k.id + '&quot;)">'
+      + '<div class="info">'
+        + '<div class="nama">' + escapeHtml(k.nama) + '</div>'
+        + '<div class="meta">' + escapeHtml(metaParts.join(' · ')) + '</div>'
+      + '</div>'
+      + '<div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">' + badge + '</div>'
+    + '</div>';
+  }).join('');
+}
+
+// ---------------------------------------------------------
+// RENDER RINGKASAN KK YANG SUDAH TERPILIH
+// ---------------------------------------------------------
+function renderTerpilih(){
+  const area = document.getElementById('terpilihArea');
+  if (selectedIds.size === 0){
+    area.innerHTML = '';
+    return;
+  }
+
+  const idsArray = Array.from(selectedIds);
+  const rows = idsArray.map((id, i) => {
+    const k = allItemsMap[id] || { nama: id };
+    return '<div class="item-terpilih">'
+      + '<span class="no">' + (i + 1) + '.</span>'
+      + '<span class="nama">' + escapeHtml(k.nama) + '</span>'
+      + '<button class="hapus" onclick="toggleItem(&quot;' + id + '&quot;)" title="Hapus dari pilihan">✕</button>'
+    + '</div>';
+  }).join('');
+
+  area.innerHTML = '<div class="section-title terpilih">KK Terpilih (' + idsArray.length + '/' + JUMLAH_WAJIB + ')</div>'
+    + '<div class="card">' + rows + '</div>';
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+
+// ---------------------------------------------------------
+// TOGGLE CHECKBOX + VALIDASI TEPAT 10
+// ---------------------------------------------------------
+function toggleItem(id){
+  if (selectedIds.has(id)){
+    selectedIds.delete(id);
+  } else {
+    if (selectedIds.size >= JUMLAH_WAJIB){
+      showToast('Sudah 10 KK terpilih. Hapus salah satu dulu untuk mengganti.', true);
+      return;
+    }
+    selectedIds.add(id);
+  }
+  renderList();
+  updateCounterAndButton();
+}
+
+function updateCounterAndButton(){
+  const btn = document.getElementById('submitBtn');
+  const count = selectedIds.size;
+  const ok = count === JUMLAH_WAJIB;
+
+  btn.disabled = !ok;
+  btn.textContent = ok
+    ? 'Submit ' + JUMLAH_WAJIB + ' KK Terpilih'
+    : 'Pilih tepat ' + JUMLAH_WAJIB + ' KK (' + count + '/' + JUMLAH_WAJIB + ')';
+}
+
+// ---------------------------------------------------------
+// SUBMIT
+// ---------------------------------------------------------
+function submitPilihan(){
+  const wilayah = document.getElementById('wilayahSelect').value;
+  if (selectedIds.size !== JUMLAH_WAJIB){
+    showToast('Wajib tepat ' + JUMLAH_WAJIB + ' KK.', true);
+    return;
+  }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Menyimpan...';
+
+  const selectedNames = {};
+  selectedIds.forEach(id => { selectedNames[id] = (allItemsMap[id] || {}).nama || ''; });
+
+  const payload = {
+    wilayah: wilayah,
+    selectedIds: Array.from(selectedIds),
+    selectedNames: selectedNames,
+    korwilName: document.getElementById('korwilInput').value.trim()
+  };
+
+  apiPost('submitPemilihan', payload)
+    .then(function(res){
+      showToast(res.message, false);
+      selectedIds = new Set();
+      onWilayahChange();
+    })
+    .catch(function(err){
+      showToast(err.message || 'Gagal menyimpan.', true);
+      updateCounterAndButton();
+    });
+}
+</script>
+</body>
+</html>
