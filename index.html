@@ -99,6 +99,17 @@
   .toast.show{opacity:1;}
   .toast.error{background:#991b1b;}
 
+  .locked-screen{
+    text-align:center; padding:40px 20px;
+  }
+  .locked-screen .icon{ font-size:48px; margin-bottom:12px; }
+  .locked-screen h2{ font-size:16px; color:#1e293b; margin:0 0 6px; }
+  .locked-screen p{ font-size:12.5px; color:#64748b; margin:0 0 4px; }
+  .locked-overlay{
+    position:fixed; inset:0; background:rgba(224,229,236,0.01);
+    z-index:500; cursor:not-allowed;
+  }
+
   .loading{ text-align:center; font-size:12.5px; color:#94a3b8; padding:16px 0; }
   .spinner{
     display:inline-block; width:16px; height:16px; border:2px solid #cbd5e1;
@@ -141,12 +152,13 @@
 // GANTI DENGAN URL WEB APP APPS SCRIPT KAMU (diakhiri /exec)
 // Deploy > Manage deployments > (ikon copy di kolom Web app)
 // ===========================================================
-const API_URL = 'https://script.google.com/macros/s/AKfycbzoSJNjhIIxUsTfCB4xayT22wS1W4YHM8yc2yC2H13MPeS2veQRMFDtYnKKH1Tnf0Dp/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxNHEyje-MrlAbOKIrDy8YRTJ4Jltmo3xdpL1_5dGgvF-KuEWfH31uc-xUVJhTmd19U_A/exec';
 
 const JUMLAH_WAJIB = 10;
 let currentData = null;
 let selectedIds = new Set();
 let allItemsMap = {};
+let isLocked = false;
 
 function showToast(msg, isError){
   const t = document.getElementById('toast');
@@ -209,6 +221,7 @@ function onError(err){
 // SAAT WILAYAH DIPILIH
 // ---------------------------------------------------------
 function onWilayahChange(){
+  if (isLocked) return;
   const wilayah = document.getElementById('wilayahSelect').value;
   selectedIds = new Set();
   allItemsMap = {};
@@ -324,6 +337,7 @@ function escapeHtml(str){
 // TOGGLE CHECKBOX + VALIDASI TEPAT 10
 // ---------------------------------------------------------
 function toggleItem(id){
+  if (isLocked) return;
   if (selectedIds.has(id)){
     selectedIds.delete(id);
   } else {
@@ -352,6 +366,7 @@ function updateCounterAndButton(){
 // SUBMIT
 // ---------------------------------------------------------
 function submitPilihan(){
+  if (isLocked) return;
   const wilayah = document.getElementById('wilayahSelect').value;
   if (selectedIds.size !== JUMLAH_WAJIB){
     showToast('Wajib tepat ' + JUMLAH_WAJIB + ' KK.', true);
@@ -362,26 +377,71 @@ function submitPilihan(){
   btn.disabled = true;
   btn.textContent = 'Menyimpan...';
 
-  const selectedNames = {};
-  selectedIds.forEach(id => { selectedNames[id] = (allItemsMap[id] || {}).nama || ''; });
+  const selectedNamesMap = {};
+  selectedIds.forEach(id => { selectedNamesMap[id] = (allItemsMap[id] || {}).nama || ''; });
 
   const payload = {
     wilayah: wilayah,
     selectedIds: Array.from(selectedIds),
-    selectedNames: selectedNames,
+    selectedNames: selectedNamesMap,
     korwilName: document.getElementById('korwilInput').value.trim()
   };
 
   apiPost('submitPemilihan', payload)
     .then(function(res){
-      showToast(res.message, false);
-      selectedIds = new Set();
-      onWilayahChange();
+      showLockedScreen(wilayah, selectedNamesMap, res.message);
     })
     .catch(function(err){
       showToast(err.message || 'Gagal menyimpan.', true);
+      btn.disabled = false;
       updateCounterAndButton();
     });
+}
+
+// ---------------------------------------------------------
+// KUNCI LAYAR SETELAH SUBMIT SUKSES
+// Setelah pemilihan 10 KK berhasil disimpan, layar dikunci total:
+// tidak bisa ganti wilayah, ubah pilihan, atau submit ulang.
+// Satu-satunya cara "reset" adalah refresh/buka ulang halaman.
+// ---------------------------------------------------------
+function showLockedScreen(wilayah, selectedNamesMap, message){
+  isLocked = true;
+
+  // Overlay transparan yang menangkap semua tap/klik di seluruh layar,
+  // termasuk elemen yang mungkin belum sempat ke-disable satu-satu.
+  const overlay = document.createElement('div');
+  overlay.className = 'locked-overlay';
+  overlay.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); });
+  overlay.addEventListener('touchstart', function(e){ e.preventDefault(); }, { passive: false });
+  document.body.appendChild(overlay);
+
+  // Nonaktifkan kontrol inti untuk jaga-jaga.
+  document.getElementById('wilayahSelect').disabled = true;
+  document.getElementById('korwilInput').disabled = true;
+  document.getElementById('korwilCard').style.display = 'none';
+
+  const rows = Object.keys(selectedNamesMap).map(function(id, i){
+    return '<div class="item-terpilih">'
+      + '<span class="no">' + (i + 1) + '.</span>'
+      + '<span class="nama">' + escapeHtml(selectedNamesMap[id] || id) + '</span>'
+    + '</div>';
+  }).join('');
+
+  document.getElementById('listArea').innerHTML =
+    '<div class="card locked-screen">'
+      + '<div class="icon">✅</div>'
+      + '<h2>Pemilihan Selesai</h2>'
+      + '<p>' + escapeHtml(message || 'Data berhasil disimpan.') + '</p>'
+      + '<p>Wilayah: <strong>' + escapeHtml(wilayah) + '</strong></p>'
+    + '</div>';
+
+  document.getElementById('terpilihArea').innerHTML =
+    '<div class="section-title terpilih">' + JUMLAH_WAJIB + ' KK Terpilih (Terkunci)</div>'
+    + '<div class="card">' + rows + '</div>';
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Sudah Disubmit — Layar Terkunci';
 }
 </script>
 </body>
