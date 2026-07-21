@@ -280,7 +280,7 @@ function renderItems(items){
   if (items.length === 0) return '<div class="empty-msg">Tidak ada data.</div>';
   if (sisaItems.length === 0) return '<div class="empty-msg">Semua KK di bagian ini sudah dipilih.</div>';
 
-  return sisaItems.map(k => {
+  return sisaItems.map((k, idx) => {
     const wajibClass = k.wajibAmplop ? ' wajib-amplop' : '';
     const badgeStatus = k.lastLabel
       ? '<span class="badge-lama">Terakhir: ' + k.lastLabel + '</span>'
@@ -295,7 +295,7 @@ function renderItems(items){
     return '<div class="item' + wajibClass + '" onclick="toggleItem(&quot;' + k.id + '&quot;)">'
       + '<input type="checkbox" onclick="event.stopPropagation(); toggleItem(&quot;' + k.id + '&quot;)">'
       + '<div class="info">'
-        + '<div class="nama">' + escapeHtml(k.nama) + '</div>'
+        + '<div class="nama">' + (idx + 1) + '. ' + escapeHtml(k.nama) + '</div>'
         + '<div class="meta">' + escapeHtml(metaParts.join(' · ')) + '</div>'
       + '</div>'
       + '<div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">' + badge + '</div>'
