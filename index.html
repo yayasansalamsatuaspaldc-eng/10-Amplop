@@ -243,9 +243,51 @@ function onWilayahChange(){
 
 function onDataLoaded(data){
   currentData = data;
-  document.getElementById('periodeLabel').textContent =
-    'Periode: ' + (data.bulanTahunBerjalan || '') + ' — Wilayah ' + data.wilayah;
+  
+  // DEBUGGING: Cek di console browser (F12) apakah API merespon dengan periode dan status yang benar dari Sheet
+  console.log("Data dari backend memuat periode berjalan:", data.bulanTahunBerjalan);
+  console.log("Status Periode dari backend:", data.statusPeriode);
+  
+  // Update UI: Memisahkan baris dan mempertegas gaya teks periode agar perubahan langsung terlihat jelas di layar
+  const periodeLabel = document.getElementById('periodeLabel');
+  periodeLabel.innerHTML = 
+    'Periode Santunan: <strong style="color:var(--blue); font-size:14px;">' + (data.bulanTahunBerjalan || 'Belum Diisi') + '</strong><br>' +
+    'Wilayah: <strong>' + data.wilayah + '</strong>';
+    
+  // --- TAMBAHAN: Cek Status Periode ---
+  // Jika status bukan OPEN, langsung kunci layar dan hentikan proses render daftar nama
+  if (data.statusPeriode !== 'OPEN') {
+    showClosedScreen(data.wilayah, data.bulanTahunBerjalan);
+    return; 
+  }
+  // ------------------------------------
+
   renderList();
+}
+
+// ---------------------------------------------------------
+// FUNGSI BARU: KUNCI LAYAR JIKA STATUS PERIODE CLOSE
+// ---------------------------------------------------------
+function showClosedScreen(wilayah, periode){
+  isLocked = true; // Mengunci agar fungsi onclick lain tidak berjalan
+
+  // Sembunyikan input korwil dan nonaktifkan tombol submit
+  document.getElementById('korwilCard').style.display = 'none';
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Periode Ditutup';
+
+  // Tampilkan pesan peringatan berlogo gembok di area daftar nama
+  document.getElementById('listArea').innerHTML =
+    '<div class="card locked-screen">'
+      + '<div class="icon">🔒</div>'
+      + '<h2>Pengisian Santunan Ditutup</h2>'
+      + '<p>Mohon maaf, pengisian data santunan wilayah <strong>' + escapeHtml(wilayah) + '</strong> untuk periode <strong>' + escapeHtml(periode) + '</strong> saat ini berstatus CLOSE (DITUTUP).</p>'
+      + '<p>Silakan hubungi Admin jika Anda merasa ini adalah sebuah kesalahan.</p>'
+    + '</div>';
+
+  // Kosongkan area terpilih agar bersih
+  document.getElementById('terpilihArea').innerHTML = '';
 }
 
 // ---------------------------------------------------------
