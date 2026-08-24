@@ -433,6 +433,15 @@ function submitPilihan(){
     return;
   }
 
+  // --- TAMBAHAN: Validasi Nama Korwil Wajib Isi ---
+  const korwilNameVal = document.getElementById('korwilInput').value.trim();
+  if (korwilNameVal === '') {
+    showToast('Nama Korwil wajib diisi sebelum submit!', true);
+    document.getElementById('korwilInput').focus(); // Otomatis mengarahkan kursor ke kolom input
+    return; // Menghentikan eksekusi kode agar data tidak terkirim ke server
+  }
+  // ------------------------------------------------
+
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
   btn.textContent = 'Menyimpan...';
@@ -444,7 +453,7 @@ function submitPilihan(){
     wilayah: wilayah,
     selectedIds: Array.from(selectedIds),
     selectedNames: selectedNamesMap,
-    korwilName: document.getElementById('korwilInput').value.trim()
+    korwilName: korwilNameVal // Memakai variabel yang sudah divalidasi di atas
   };
 
   apiPost('submitPemilihan', payload)
