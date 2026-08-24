@@ -203,13 +203,31 @@ window.onload = function(){
     .catch(onError);
 };
 
-function populateWilayah(list){
+function populateWilayah(data){
+  // DEBUGGING: Lacak data utuh yang datang saat halaman pertama kali dibuka
+  console.log("Memuat data awal dari backend:", data);
+
   const sel = document.getElementById('wilayahSelect');
+  
+  // Karena backend sekarang mengirim object, daftar wilayah ada di data.wilayahList
+  const list = data.wilayahList || [];
+  
   list.forEach(w => {
     const opt = document.createElement('option');
     opt.value = w; opt.textContent = w;
     sel.appendChild(opt);
   });
+  
+  // Update UI: Ubah subtitle "Rotasi Santunan Amplop Bulanan" menjadi teks Periode secara instan
+  const periodeLabel = document.getElementById('periodeLabel');
+  if (data.periode) {
+    periodeLabel.innerHTML = 'Periode Santunan: <strong style="color:var(--blue); font-size:14px;">' + data.periode + '</strong>';
+  }
+  
+  // Fitur Tambahan UI: Memunculkan peringatan pop-up di bawah jika status sudah ditutup dari awal
+  if (data.status && data.status !== 'OPEN') {
+     showToast('Info: Periode ' + data.periode + ' saat ini berstatus DITUTUP.', true);
+  }
 }
 
 function onError(err){
