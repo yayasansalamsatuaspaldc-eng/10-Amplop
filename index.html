@@ -132,8 +132,13 @@
   </div>
 
   <div class="card" id="korwilCard" style="display:none;">
-    <label for="korwilInput">Nama Korwil (opsional, untuk jejak audit)</label>
+    <label for="korwilInput">Nama Korwil (Wajib diisi untuk jejak audit)</label>
     <input type="text" id="korwilInput" placeholder="Contoh: Budi Santoso">
+  </div>
+
+  <div class="card" id="searchCard" style="display:none;">
+    <label for="searchInput">🔍 Cari Nama ALM</label>
+    <input type="text" id="searchInput" placeholder="Ketik nama untuk mencari..." onkeyup="filterPencarian()">
   </div>
 
   <div id="listArea"></div>
@@ -244,6 +249,7 @@ function onWilayahChange(){
   selectedIds = new Set();
   allItemsMap = {};
   document.getElementById('korwilCard').style.display = wilayah ? 'block' : 'none';
+  document.getElementById('searchCard').style.display = 'none'; // Sembunyikan pencarian saat loading/ganti wilayah
 
   if (!wilayah){
     document.getElementById('listArea').innerHTML = '';
@@ -280,6 +286,8 @@ function onDataLoaded(data){
   }
   // ------------------------------------
 
+  document.getElementById('searchCard').style.display = 'block'; // Tampilkan kotak pencarian
+  document.getElementById('searchInput').value = ''; // Reset/Bersihkan isi kotak jika ada ketikan lama
   renderList();
 }
 
@@ -291,6 +299,7 @@ function showClosedScreen(wilayah, periode){
 
   // Sembunyikan input korwil dan nonaktifkan tombol submit
   document.getElementById('korwilCard').style.display = 'none';
+  document.getElementById('searchCard').style.display = 'none'; // Sembunyikan kotak pencarian
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
   btn.textContent = 'Periode Ditutup';
@@ -408,6 +417,7 @@ function toggleItem(id){
     selectedIds.add(id);
   }
   renderList();
+  filterPencarian(); // Aplikasikan ulang filter agar daftar tidak ter-reset secara visual saat nama diklik
   updateCounterAndButton();
 }
 
@@ -488,6 +498,7 @@ function showLockedScreen(wilayah, selectedNamesMap, message){
   document.getElementById('wilayahSelect').disabled = true;
   document.getElementById('korwilInput').disabled = true;
   document.getElementById('korwilCard').style.display = 'none';
+  document.getElementById('searchCard').style.display = 'none'; // Sembunyikan kotak pencarian setelah sukses
 
   const rows = Object.keys(selectedNamesMap).map(function(id, i){
     return '<div class="item-terpilih">'
@@ -511,6 +522,37 @@ function showLockedScreen(wilayah, selectedNamesMap, message){
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
   btn.textContent = 'Sudah Disubmit — Layar Terkunci';
+}
+
+// ---------------------------------------------------------
+// FUNGSI BARU: PENCARIAN REAL-TIME
+// ---------------------------------------------------------
+function filterPencarian(){
+  try {
+    const input = document.getElementById('searchInput');
+    const filter = input.value.toLowerCase(); // Merubah huruf jadi kecil agar tidak sensitif kapital
+    const listArea = document.getElementById('listArea');
+    const items = listArea.getElementsByClassName('item');
+    
+    let countVisible = 0;
+    // Cek satu per satu kotak nama yang ada
+    for (let i = 0; i < items.length; i++) {
+      const namaEl = items[i].getElementsByClassName('nama')[0];
+      if (namaEl) {
+        const textValue = namaEl.textContent || namaEl.innerText;
+        // Jika teks nama mengandung huruf yang diketik, maka tampilkan
+        if (textValue.toLowerCase().indexOf(filter) > -1) {
+          items[i].style.display = ""; // Tampilkan kotak
+          countVisible++;
+        } else {
+          items[i].style.display = "none"; // Sembunyikan kotak
+        }
+      }
+    }
+    console.log("Filter dijalankan: '" + filter + "', ditemukan " + countVisible + " nama.");
+  } catch (err) {
+    console.log("Error saat pencarian: " + err.message);
+  }
 }
 </script>
 </body>
