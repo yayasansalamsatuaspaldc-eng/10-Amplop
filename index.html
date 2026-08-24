@@ -198,23 +198,10 @@ async function apiPost(action, payload){
 // INIT
 // ---------------------------------------------------------
 window.onload = function(){
-  apiGet('getPeriodeAktif')
-    .then(showPeriodeLabelAwal)
-    .catch(function(){ /* diamkan; error utama ditangani oleh getWilayahOptions di bawah */ });
-
   apiGet('getWilayahOptions')
     .then(populateWilayah)
     .catch(onError);
 };
-
-// Tampilkan label periode aktif langsung saat halaman dibuka,
-// sebelum wilayah dipilih. Nanti begitu wilayah dipilih dan data
-// kel alm dimuat, onDataLoaded() akan menimpa teks ini dengan versi
-// yang juga menyertakan nama wilayah.
-function showPeriodeLabelAwal(periode){
-  const statusTxt = periode.status === 'CLOSED' ? ' (DITUTUP)' : '';
-  document.getElementById('periodeLabel').textContent = 'Periode: ' + periode.label + statusTxt;
-}
 
 function populateWilayah(list){
   const sel = document.getElementById('wilayahSelect');
