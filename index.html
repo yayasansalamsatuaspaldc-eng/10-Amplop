@@ -117,6 +117,55 @@
     margin-right:8px; vertical-align:middle;
   }
   @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  /* ===================== TUTORIAL ===================== */
+  .tutorial-overlay{
+    position:fixed; inset:0; background:rgba(30,41,59,0.55);
+    display:flex; align-items:flex-end; justify-content:center;
+    z-index:2000; padding:0;
+  }
+  .tutorial-sheet{
+    width:100%; max-width:640px; max-height:86vh; overflow-y:auto;
+    background:var(--bg); border-radius:24px 24px 0 0; box-shadow:var(--shadow-out);
+    padding:20px 20px 24px;
+    animation: slideUp .25s ease-out;
+  }
+  @keyframes slideUp{ from{ transform:translateY(30px); opacity:0; } to{ transform:translateY(0); opacity:1; } }
+  .tutorial-sheet h2{
+    font-size:16px; font-weight:800; color:#1e293b; margin:0 0 4px; text-align:center;
+  }
+  .tutorial-sheet .tutorial-sub{
+    font-size:12px; color:#64748b; text-align:center; margin-bottom:16px;
+  }
+  .tutorial-step{
+    display:flex; gap:12px; align-items:flex-start;
+    padding:12px 14px; border-radius:14px; background:var(--bg);
+    box-shadow:var(--shadow-out); margin-bottom:10px;
+  }
+  .tutorial-step .num{
+    flex-shrink:0; width:26px; height:26px; border-radius:50%;
+    background:var(--blue); color:#fff; font-weight:800; font-size:12.5px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .tutorial-step .txt-title{ font-weight:700; font-size:13px; color:#1e293b; margin-bottom:2px; }
+  .tutorial-step .txt-desc{ font-size:12px; color:#64748b; line-height:1.5; }
+  .tutorial-note{
+    font-size:11.5px; color:#92400e; background:#fef3c7; border-radius:12px;
+    padding:10px 12px; margin:6px 0 16px; text-align:center;
+  }
+  .tutorial-close-btn{
+    width:100%; padding:15px; border:none; border-radius:16px;
+    background:var(--bg); box-shadow:var(--shadow-out);
+    font-weight:800; font-size:14px; color:var(--blue); cursor:pointer;
+  }
+  .tutorial-close-btn:active{ box-shadow:var(--shadow-in); }
+
+  .help-fab{
+    position:fixed; right:18px; bottom:18px; width:48px; height:48px; border-radius:50%;
+    background:var(--bg); box-shadow:var(--shadow-out); border:none; cursor:pointer;
+    font-size:20px; font-weight:800; color:var(--blue); z-index:900;
+  }
+  .help-fab:active{ box-shadow:var(--shadow-in); }
 </style>
 </head>
 <body>
@@ -151,6 +200,59 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<button class="help-fab" id="helpFab" onclick="openTutorial()" title="Lihat tutorial">?</button>
+
+<div class="tutorial-overlay" id="tutorialOverlay" style="display:none;">
+  <div class="tutorial-sheet">
+    <h2>👋 Cara Pakai Halaman Ini</h2>
+    <div class="tutorial-sub">Ikuti langkah berikut untuk mengisi Pemilihan Kel Alm</div>
+
+    <div class="tutorial-step">
+      <div class="num">1</div>
+      <div>
+        <div class="txt-title">Pilih Wilayah</div>
+        <div class="txt-desc">Pilih wilayah Anda di dropdown paling atas. Daftar Kel Alm dan nama Korwil akan otomatis muncul.</div>
+      </div>
+    </div>
+
+    <div class="tutorial-step">
+      <div class="num">2</div>
+      <div>
+        <div class="txt-title">Cek Nama Korwil</div>
+        <div class="txt-desc">Nama Korwil biasanya terisi otomatis. Pastikan nama sudah benar, ubah jika perlu — kolom ini wajib diisi.</div>
+      </div>
+    </div>
+
+    <div class="tutorial-step">
+      <div class="num">3</div>
+      <div>
+        <div class="txt-title">Cari &amp; Pilih Kel Alm</div>
+        <div class="txt-desc">Gunakan kotak pencarian jika daftar panjang. Ketuk nama atau centang kotaknya untuk memilih. Kel Alm dengan label ⚠ Wajib Amplop harus diprioritaskan karena tidak punya rekening bank.</div>
+      </div>
+    </div>
+
+    <div class="tutorial-step">
+      <div class="num">4</div>
+      <div>
+        <div class="txt-title">Pastikan Tepat 10 KK</div>
+        <div class="txt-desc">Daftar "KK Terpilih" di bawah menunjukkan yang sudah dipilih. Ketuk ✕ untuk membatalkan pilihan. Tombol submit baru aktif setelah tepat 10 KK terpilih.</div>
+      </div>
+    </div>
+
+    <div class="tutorial-step">
+      <div class="num">5</div>
+      <div>
+        <div class="txt-title">Submit</div>
+        <div class="txt-desc">Ketuk tombol submit di bagian bawah. Setelah berhasil, layar akan terkunci dan tidak bisa diubah lagi — pastikan data sudah benar sebelum submit.</div>
+      </div>
+    </div>
+
+    <div class="tutorial-note">💡 Butuh bantuan lagi? Ketuk tombol "?" di pojok kanan bawah kapan saja untuk membuka tutorial ini lagi.</div>
+
+    <button class="tutorial-close-btn" onclick="closeTutorial()">Mengerti, Mulai Isi</button>
+  </div>
+</div>
 
 <script>
 // ===========================================================
@@ -203,10 +305,21 @@ async function apiPost(action, payload){
 // INIT
 // ---------------------------------------------------------
 window.onload = function(){
+  openTutorial(); // Tampilkan tutorial setiap kali halaman dibuka
   apiGet('getWilayahOptions')
     .then(populateWilayah)
     .catch(onError);
 };
+
+// ---------------------------------------------------------
+// TUTORIAL: buka / tutup panel panduan penggunaan
+// ---------------------------------------------------------
+function openTutorial(){
+  document.getElementById('tutorialOverlay').style.display = 'flex';
+}
+function closeTutorial(){
+  document.getElementById('tutorialOverlay').style.display = 'none';
+}
 
 function populateWilayah(data){
   // DEBUGGING: Lacak data utuh yang datang saat halaman pertama kali dibuka
