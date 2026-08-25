@@ -245,6 +245,7 @@ let currentData = null;
 let selectedIds = new Set();
 let allItemsMap = {};
 let isLocked = false;
+let korwilMap = {}; // { WILAYAH: 'Nama Korwil' } — dikirim backend dari spreadsheet Akun
 
 function showToast(msg, isError){
   const t = document.getElementById('toast');
@@ -494,6 +495,9 @@ function populateWilayah(data){
     opt.value = w; opt.textContent = w;
     sel.appendChild(opt);
   });
+
+  // Simpan peta Nama Korwil per wilayah yang dikirim backend (dari spreadsheet Akun)
+  korwilMap = data.korwilMap || {};
   
   // Update UI: Ubah subtitle "Rotasi Santunan Amplop Bulanan" menjadi teks Periode secara instan
   const periodeLabel = document.getElementById('periodeLabel');
@@ -524,34 +528,24 @@ function onWilayahChange(){
   document.getElementById('searchCard').style.display = 'none'; // Sembunyikan pencarian saat loading/ganti wilayah
 
   // --- TAMBAHAN: Autofill Nama Korwil Berdasarkan Wilayah ---
+  // Sumber data: korwilMap yang dikirim backend dari spreadsheet Akun
+  // (Sheet "Akun": Kolom A = Nama, Kolom B = Jabatan, Kolom G = Wilayah).
   try {
-    // KAMUS DATA KORWIL: Silakan ganti teks di sebelah kanan (setelah titik dua) dengan nama Korwil yang asli
-    const dataKorwil = {
-      'BOGOR': 'Nama Korwil Bogor',
-      'DEPOK': 'Nama Korwil Depok',
-      'GRESIK': 'Nama Korwil Gresik',
-      'JAKARTA TIMUR': 'Nama Korwil Jaktim',
-      'JAKARTA SELATAN': 'Nama Korwil Jaksel',
-      'JAKARTA BARAT': 'Nama Korwil Jakbar',
-      'JAKARTA UTARA': 'Nama Korwil Jakut',
-      'JAKARTA PUSAT': 'Nama Korwil Jakpus',
-      'KABUPATEN BEKASI': 'Nama Korwil Kab Bekasi',
-      'KOTA BEKASI': 'Nama Korwil Kota Bekasi',
-      'SIDOARJO': 'Nama Korwil Sidoarjo',
-      'SURABAYA': 'Nama Korwil Surabaya',
-      'TANGGERANG KABUPATEN': 'Nama Korwil Kab Tangerang',
-      'TANGGERANG SELATAN': 'Nama Korwil Tangsel',
-      'TANGGERANG KOTA': 'Nama Korwil Kota Tangerang',
-      'TASIKMALAYA': 'Nama Korwil Tasikmalaya'
-    };
+    // Dicocokkan tanpa peduli huruf besar/kecil & spasi berlebih,
+    // supaya tidak gagal hanya karena beda penulisan dengan data dari Sheet.
+    const normalize = s => (s || '').toString().trim().toUpperCase().replace(/\s+/g, ' ');
 
     const inputKorwil = document.getElementById('korwilInput');
-    // Jika wilayah valid dan ada di kamus data, masukkan namanya ke kolom input
-    if (wilayah && dataKorwil[wilayah]) {
-      inputKorwil.value = dataKorwil[wilayah];
-      console.log("Berhasil autofill Korwil: " + dataKorwil[wilayah] + " untuk wilayah " + wilayah);
+    const wilayahKey = normalize(wilayah);
+    // Jika wilayah valid dan ada di korwilMap, masukkan namanya ke kolom input
+    if (wilayah && korwilMap[wilayahKey]) {
+      inputKorwil.value = korwilMap[wilayahKey];
+      console.log("Berhasil autofill Korwil: " + korwilMap[wilayahKey] + " untuk wilayah " + wilayah);
     } else {
-      inputKorwil.value = ''; // Kosongkan jika wilayah di-reset ke "-- Pilih Wilayah --"
+      inputKorwil.value = ''; // Kosongkan jika wilayah di-reset atau tidak ada datanya
+      if (wilayah) {
+        console.log("Autofill Korwil GAGAL: wilayah '" + wilayah + "' (key: '" + wilayahKey + "') tidak ditemukan di korwilMap dari backend. Cek data di sheet Akun (Jabatan harus mengandung kata 'KORWIL').");
+      }
     }
   } catch (err) {
     console.log("Error saat autofill nama Korwil: " + err.message);
