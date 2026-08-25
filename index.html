@@ -11,31 +11,54 @@
     --shadow-in: inset 4px 4px 8px rgba(163,177,198,0.6), inset -4px -4px 8px rgba(255,255,255,0.8);
     --blue:#2563eb;
     --amber:#b45309;
+    --text-main:#1e293b;
+    --text-sub:#64748b;
+    --text-faint:#94a3b8;
+    --text-label:#475569;
+  }
+  html[data-theme="dark"]{
+    --bg:#262b36;
+    --shadow-out: 9px 9px 16px rgba(0,0,0,0.55), -9px -9px 16px rgba(60,67,84,0.5);
+    --shadow-in: inset 4px 4px 8px rgba(0,0,0,0.55), inset -4px -4px 8px rgba(60,67,84,0.5);
+    --blue:#60a5fa;
+    --amber:#fbbf24;
+    --text-main:#e6e9f0;
+    --text-sub:#a3acc0;
+    --text-faint:#78829a;
+    --text-label:#c3cadb;
   }
   *{box-sizing:border-box;}
   body{
     margin:0; padding:16px; background:var(--bg);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color:#334155;
+    color:var(--text-main);
+    transition: background .2s ease, color .2s ease;
   }
   .container{max-width:640px; margin:0 auto;}
   h1{font-size:18px; font-weight:800; text-align:center; margin:8px 0 4px;}
-  .subtitle{text-align:center; font-size:12px; color:#64748b; margin-bottom:20px;}
+  .subtitle{text-align:center; font-size:12px; color:var(--text-sub); margin-bottom:20px;}
+
+  .theme-toggle{
+    display:block; margin:0 auto 14px; padding:9px 18px; border:none; border-radius:14px;
+    background:var(--bg); box-shadow:var(--shadow-out);
+    font-size:12px; font-weight:700; color:var(--text-label); cursor:pointer;
+  }
+  .theme-toggle:active{ box-shadow:var(--shadow-in); }
 
   .card{
     background:var(--bg); border-radius:20px; box-shadow:var(--shadow-out);
     padding:18px; margin-bottom:16px;
   }
-  label{font-size:12px; font-weight:700; color:#475569; display:block; margin-bottom:6px;}
+  label{font-size:12px; font-weight:700; color:var(--text-label); display:block; margin-bottom:6px;}
   select, input[type=text]{
     width:100%; padding:12px 14px; border:none; border-radius:14px;
-    background:var(--bg); box-shadow:var(--shadow-in); font-size:14px; color:#1e293b;
+    background:var(--bg); box-shadow:var(--shadow-in); font-size:14px; color:var(--text-main);
     outline:none; appearance:none;
   }
 
   .section-title{
     font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;
-    color:#64748b; margin: 18px 0 8px;
+    color:var(--text-sub); margin: 18px 0 8px;
   }
   .section-title.lanjutan{color:var(--amber);}
   .section-title.terpilih{color:var(--blue);}
@@ -49,8 +72,8 @@
   .item.selected{ box-shadow:var(--shadow-in); }
   .item input[type=checkbox]{ width:20px; height:20px; flex-shrink:0; accent-color:var(--blue); }
   .item .info{flex:1; min-width:0;}
-  .item .nama{font-weight:700; font-size:13.5px; color:#1e293b;}
-  .item .meta{font-size:11px; color:#64748b; margin-top:2px;}
+  .item .nama{font-weight:700; font-size:13.5px; color:var(--text-main);}
+  .item .meta{font-size:11px; color:var(--text-sub); margin-top:2px;}
   .badge-lama{
     font-size:10px; font-weight:800; padding:3px 8px; border-radius:8px;
     background:#fef3c7; color:#92400e; white-space:nowrap;
@@ -73,13 +96,13 @@
   .item-terpilih .no{
     font-weight:800; font-size:12px; color:var(--blue); width:20px; flex-shrink:0;
   }
-  .item-terpilih .nama{ flex:1; font-weight:700; font-size:13px; color:#1e293b; }
+  .item-terpilih .nama{ flex:1; font-weight:700; font-size:13px; color:var(--text-main); }
   .item-terpilih .hapus{
     border:none; background:transparent; color:#dc2626; font-weight:800;
     font-size:16px; cursor:pointer; padding:2px 8px; line-height:1;
   }
 
-  .empty-msg{ text-align:center; font-size:12.5px; color:#94a3b8; padding:20px 0; }
+  .empty-msg{ text-align:center; font-size:12.5px; color:var(--text-faint); padding:20px 0; }
 
   button.submit-btn{
     width:100%; padding:16px; border:none; border-radius:16px;
@@ -87,7 +110,7 @@
     font-weight:800; font-size:14px; color:var(--blue); cursor:pointer;
     margin-top:8px;
   }
-  button.submit-btn:disabled{ color:#94a3b8; cursor:not-allowed; }
+  button.submit-btn:disabled{ color:var(--text-faint); cursor:not-allowed; }
   button.submit-btn:active:not(:disabled){ box-shadow:var(--shadow-in); }
 
   .toast{
@@ -103,14 +126,14 @@
     text-align:center; padding:40px 20px;
   }
   .locked-screen .icon{ font-size:48px; margin-bottom:12px; }
-  .locked-screen h2{ font-size:16px; color:#1e293b; margin:0 0 6px; }
-  .locked-screen p{ font-size:12.5px; color:#64748b; margin:0 0 4px; }
+  .locked-screen h2{ font-size:16px; color:var(--text-main); margin:0 0 6px; }
+  .locked-screen p{ font-size:12.5px; color:var(--text-sub); margin:0 0 4px; }
   .locked-overlay{
     position:fixed; inset:0; background:rgba(224,229,236,0.01);
     z-index:500; cursor:not-allowed;
   }
 
-  .loading{ text-align:center; font-size:12.5px; color:#94a3b8; padding:16px 0; }
+  .loading{ text-align:center; font-size:12.5px; color:var(--text-faint); padding:16px 0; }
   .spinner{
     display:inline-block; width:16px; height:16px; border:2px solid #cbd5e1;
     border-top-color: var(--blue); border-radius:50%; animation:spin .7s linear infinite;
@@ -118,75 +141,81 @@
   }
   @keyframes spin{ to{ transform:rotate(360deg); } }
 
-  /* ===================== TUTORIAL ===================== */
-  .tutorial-overlay{
-    position:fixed; inset:0; background:rgba(30,41,59,0.55);
-    display:flex; align-items:flex-end; justify-content:center;
-    z-index:2000; padding:0;
+  /* ===================== TUTORIAL: COACH MARK TOUR (seperti YASSA Hub) ===================== */
+  .coach-dim{
+    position:fixed; inset:0; z-index:3000;
+    background:rgba(15,23,42,0.72);
+    transition: clip-path .25s ease;
   }
-  .tutorial-sheet{
-    width:100%; max-width:640px; max-height:86vh; overflow-y:auto;
-    background:var(--bg); border-radius:24px 24px 0 0; box-shadow:var(--shadow-out);
-    padding:20px 20px 24px;
-    animation: slideUp .25s ease-out;
+  .coach-highlight{
+    position:fixed; z-index:3001; border-radius:16px;
+    box-shadow:0 0 0 4px #fff, 0 0 0 9999px rgba(15,23,42,0.72);
+    pointer-events:none; transition: all .25s ease;
   }
-  @keyframes slideUp{ from{ transform:translateY(30px); opacity:0; } to{ transform:translateY(0); opacity:1; } }
-  .tutorial-sheet h2{
-    font-size:16px; font-weight:800; color:#1e293b; margin:0 0 4px; text-align:center;
+  .coach-card{
+    position:fixed; z-index:3002; background:#fff; border-radius:18px;
+    padding:18px 20px; width:290px; max-width:84vw;
+    box-shadow:0 16px 34px rgba(0,0,0,0.35);
+    transition: top .25s ease, left .25s ease;
   }
-  .tutorial-sheet .tutorial-sub{
-    font-size:12px; color:#64748b; text-align:center; margin-bottom:16px;
+  .coach-card .coach-top{
+    display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;
   }
-  .tutorial-step{
-    display:flex; gap:12px; align-items:flex-start;
-    padding:12px 14px; border-radius:14px; background:var(--bg);
-    box-shadow:var(--shadow-out); margin-bottom:10px;
+  .coach-card h3{ font-size:15px; font-weight:800; color:#0f172a; margin:0; }
+  .coach-card .coach-skip{
+    font-size:12px; font-weight:700; color:#64748b; cursor:pointer; white-space:nowrap; margin-left:10px;
   }
-  .tutorial-step .num{
-    flex-shrink:0; width:26px; height:26px; border-radius:50%;
-    background:var(--blue); color:#fff; font-weight:800; font-size:12.5px;
-    display:flex; align-items:center; justify-content:center;
+  .coach-card p{ font-size:12.5px; color:#475569; line-height:1.55; margin:0 0 16px; }
+  .coach-card .coach-bottom{ display:flex; justify-content:space-between; align-items:center; }
+  .coach-card .coach-count{ font-size:12px; color:#94a3b8; font-weight:700; }
+  .coach-card .coach-next{
+    font-size:14px; font-weight:800; color:#16a34a; background:none; border:none; cursor:pointer; padding:4px;
   }
-  .tutorial-step .txt-title{ font-weight:700; font-size:13px; color:#1e293b; margin-bottom:2px; }
-  .tutorial-step .txt-desc{ font-size:12px; color:#64748b; line-height:1.5; }
-  .tutorial-note{
-    font-size:11.5px; color:#92400e; background:#fef3c7; border-radius:12px;
-    padding:10px 12px; margin:6px 0 16px; text-align:center;
-  }
-  .tutorial-close-btn{
-    width:100%; padding:15px; border:none; border-radius:16px;
-    background:var(--bg); box-shadow:var(--shadow-out);
-    font-weight:800; font-size:14px; color:var(--blue); cursor:pointer;
-  }
-  .tutorial-close-btn:active{ box-shadow:var(--shadow-in); }
 
-  .help-fab{
-    position:fixed; right:18px; bottom:18px; width:48px; height:48px; border-radius:50%;
-    background:var(--bg); box-shadow:var(--shadow-out); border:none; cursor:pointer;
-    font-size:20px; font-weight:800; color:var(--blue); z-index:900;
+  /* ===================== TOMBOL BANTUAN (!) PER FIELD ===================== */
+  label{ display:flex; align-items:center; gap:6px; }
+  .help-icon{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:16px; height:16px; border-radius:50%; flex-shrink:0;
+    background:var(--amber); color:#fff; font-size:11px; font-weight:800;
+    cursor:pointer; line-height:1; border:none; padding:0;
   }
-  .help-fab:active{ box-shadow:var(--shadow-in); }
+  .help-popover{
+    position:fixed; z-index:3100; background:#1e293b; color:#fff;
+    border-radius:12px; padding:10px 12px; font-size:12px; line-height:1.5;
+    width:240px; max-width:78vw; box-shadow:0 10px 24px rgba(0,0,0,0.3);
+  }
 </style>
 </head>
 <body>
 <div class="container">
+  <button type="button" class="theme-toggle" id="themeToggleBtn" onclick="toggleTheme()">🌙 Mode Gelap</button>
   <h1>🕊️ Pemilihan Kel Alm</h1>
   <div class="subtitle" id="periodeLabel">Rotasi Santunan Amplop Bulanan</div>
+  <div style="text-align:center; margin-bottom:14px;">
+    <span onclick="startCoachTour()" style="font-size:11.5px; font-weight:700; color:var(--blue); cursor:pointer; text-decoration:underline;">📖 Lihat tutorial cara pakai</span>
+  </div>
 
   <div class="card">
-    <label for="wilayahSelect">Pilih Wilayah</label>
+    <label for="wilayahSelect">Pilih Wilayah
+      <button type="button" class="help-icon" onclick="showFieldHelp(this, event, 'Mulai dengan memilih wilayah Anda di sini. Daftar Kel Alm dan nama Korwil akan otomatis dimuat.')">!</button>
+    </label>
     <select id="wilayahSelect" onchange="onWilayahChange()">
       <option value="">-- Pilih Wilayah --</option>
     </select>
   </div>
 
   <div class="card" id="korwilCard" style="display:none;">
-    <label for="korwilInput">Nama Korwil (Wajib diisi untuk jejak audit)</label>
+    <label for="korwilInput">Nama Korwil (Wajib diisi untuk jejak audit)
+      <button type="button" class="help-icon" onclick="showFieldHelp(this, event, 'Nama Korwil akan otomatis terisi setelah wilayah dipilih. Pastikan namanya sudah benar — kolom ini wajib diisi sebelum submit.')">!</button>
+    </label>
     <input type="text" id="korwilInput" placeholder="Contoh: Budi Santoso">
   </div>
 
   <div class="card" id="searchCard" style="display:none;">
-    <label for="searchInput">🔍 Cari Nama ALM</label>
+    <label for="searchInput">🔍 Cari Nama ALM
+      <button type="button" class="help-icon" onclick="showFieldHelp(this, event, 'Gunakan kotak ini untuk mencari nama Kel Alm dengan cepat jika daftarnya panjang.')">!</button>
+    </label>
     <input type="text" id="searchInput" placeholder="Ketik nama untuk mencari..." onkeyup="filterPencarian()">
   </div>
 
@@ -194,65 +223,15 @@
 
   <div id="terpilihArea"></div>
 
+  <div style="text-align:center; margin-bottom:6px;">
+    <button type="button" class="help-icon" style="background:var(--blue);" onclick="showFieldHelp(this, event, 'Tombol ini aktif setelah tepat 10 KK terpilih. Setelah submit berhasil, layar akan terkunci dan tidak bisa diubah lagi.')">!</button>
+  </div>
   <button class="submit-btn" id="submitBtn" onclick="submitPilihan()" disabled>
     Pilih tepat 10 KK untuk submit
   </button>
 </div>
 
 <div class="toast" id="toast"></div>
-
-<button class="help-fab" id="helpFab" onclick="openTutorial()" title="Lihat tutorial">?</button>
-
-<div class="tutorial-overlay" id="tutorialOverlay" style="display:none;">
-  <div class="tutorial-sheet">
-    <h2>👋 Cara Pakai Halaman Ini</h2>
-    <div class="tutorial-sub">Ikuti langkah berikut untuk mengisi Pemilihan Kel Alm</div>
-
-    <div class="tutorial-step">
-      <div class="num">1</div>
-      <div>
-        <div class="txt-title">Pilih Wilayah</div>
-        <div class="txt-desc">Pilih wilayah Anda di dropdown paling atas. Daftar Kel Alm dan nama Korwil akan otomatis muncul.</div>
-      </div>
-    </div>
-
-    <div class="tutorial-step">
-      <div class="num">2</div>
-      <div>
-        <div class="txt-title">Cek Nama Korwil</div>
-        <div class="txt-desc">Nama Korwil biasanya terisi otomatis. Pastikan nama sudah benar, ubah jika perlu — kolom ini wajib diisi.</div>
-      </div>
-    </div>
-
-    <div class="tutorial-step">
-      <div class="num">3</div>
-      <div>
-        <div class="txt-title">Cari &amp; Pilih Kel Alm</div>
-        <div class="txt-desc">Gunakan kotak pencarian jika daftar panjang. Ketuk nama atau centang kotaknya untuk memilih. Kel Alm dengan label ⚠ Wajib Amplop harus diprioritaskan karena tidak punya rekening bank.</div>
-      </div>
-    </div>
-
-    <div class="tutorial-step">
-      <div class="num">4</div>
-      <div>
-        <div class="txt-title">Pastikan Tepat 10 KK</div>
-        <div class="txt-desc">Daftar "KK Terpilih" di bawah menunjukkan yang sudah dipilih. Ketuk ✕ untuk membatalkan pilihan. Tombol submit baru aktif setelah tepat 10 KK terpilih.</div>
-      </div>
-    </div>
-
-    <div class="tutorial-step">
-      <div class="num">5</div>
-      <div>
-        <div class="txt-title">Submit</div>
-        <div class="txt-desc">Ketuk tombol submit di bagian bawah. Setelah berhasil, layar akan terkunci dan tidak bisa diubah lagi — pastikan data sudah benar sebelum submit.</div>
-      </div>
-    </div>
-
-    <div class="tutorial-note">💡 Butuh bantuan lagi? Ketuk tombol "?" di pojok kanan bawah kapan saja untuk membuka tutorial ini lagi.</div>
-
-    <button class="tutorial-close-btn" onclick="closeTutorial()">Mengerti, Mulai Isi</button>
-  </div>
-</div>
 
 <script>
 // ===========================================================
@@ -302,23 +281,203 @@ async function apiPost(action, payload){
 }
 
 // ---------------------------------------------------------
+// MODE GELAP / TERANG
+// ---------------------------------------------------------
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = document.getElementById('themeToggleBtn');
+  btn.textContent = theme === 'dark' ? '☀️ Mode Terang' : '🌙 Mode Gelap';
+  try { localStorage.setItem('yassaTheme', theme); } catch(e){}
+}
+
+function toggleTheme(){
+  const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+}
+
+function initTheme(){
+  let saved = null;
+  try { saved = localStorage.getItem('yassaTheme'); } catch(e){}
+  if (!saved){
+    saved = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+  applyTheme(saved);
+}
+
+// ---------------------------------------------------------
 // INIT
 // ---------------------------------------------------------
+initTheme();
 window.onload = function(){
-  openTutorial(); // Tampilkan tutorial setiap kali halaman dibuka
   apiGet('getWilayahOptions')
     .then(populateWilayah)
     .catch(onError);
+  setTimeout(startCoachTour, 400); // beri jeda agar elemen sudah siap dirender
 };
 
 // ---------------------------------------------------------
-// TUTORIAL: buka / tutup panel panduan penggunaan
+// TUTORIAL: COACH MARK TOUR (kartu + spotlight, gaya sama seperti YASSA Hub)
 // ---------------------------------------------------------
-function openTutorial(){
-  document.getElementById('tutorialOverlay').style.display = 'flex';
+const coachSteps = [
+  {
+    target: null,
+    title: 'Selamat Datang 👋',
+    desc: 'Halaman ini dipakai untuk memilih 10 KK Kel Alm yang akan menerima santunan bulan ini. Ikuti tur singkat berikut.'
+  },
+  {
+    target: 'wilayahSelect',
+    title: 'Pilih Wilayah',
+    desc: 'Mulai dengan memilih wilayah Anda di sini. Daftar Kel Alm dan nama Korwil akan otomatis dimuat.'
+  },
+  {
+    target: null,
+    title: 'Nama Korwil',
+    desc: 'Setelah wilayah dipilih, kolom Nama Korwil akan muncul dan biasanya terisi otomatis. Pastikan namanya sudah benar — kolom ini wajib diisi.'
+  },
+  {
+    target: null,
+    title: 'Cari & Pilih Kel Alm',
+    desc: 'Daftar Kel Alm akan tampil lengkap dengan kotak pencarian. Ketuk nama atau centang kotaknya untuk memilih. Yang berlabel ⚠ Wajib Amplop harus diprioritaskan karena tidak punya rekening bank.'
+  },
+  {
+    target: null,
+    title: 'Pastikan Tepat 10 KK',
+    desc: 'Bagian "KK Terpilih" menunjukkan siapa saja yang sudah dipilih. Ketuk ✕ untuk membatalkan salah satu pilihan.'
+  },
+  {
+    target: 'submitBtn',
+    title: 'Submit',
+    desc: 'Tombol ini aktif setelah tepat 10 KK terpilih. Setelah submit berhasil, layar akan terkunci dan tidak bisa diubah lagi.'
+  }
+];
+let coachIndex = 0;
+let coachEls = null;
+
+function startCoachTour(){
+  if (isLocked) return;
+  coachIndex = 0;
+  buildCoachDom();
+  renderCoachStep();
 }
-function closeTutorial(){
-  document.getElementById('tutorialOverlay').style.display = 'none';
+
+function buildCoachDom(){
+  if (coachEls) return;
+  const dim = document.createElement('div');
+  dim.className = 'coach-dim';
+  const highlight = document.createElement('div');
+  highlight.className = 'coach-highlight';
+  const card = document.createElement('div');
+  card.className = 'coach-card';
+  card.innerHTML =
+    '<div class="coach-top"><h3 id="coachTitle"></h3><span class="coach-skip" onclick="endCoachTour()">Lewati</span></div>'
+    + '<p id="coachDesc"></p>'
+    + '<div class="coach-bottom"><span class="coach-count" id="coachCount"></span>'
+    + '<button class="coach-next" id="coachNextBtn" onclick="nextCoachStep()">Lanjut</button></div>';
+  document.body.appendChild(dim);
+  document.body.appendChild(highlight);
+  document.body.appendChild(card);
+  coachEls = { dim, highlight, card };
+}
+
+function renderCoachStep(){
+  const step = coachSteps[coachIndex];
+  const total = coachSteps.length;
+
+  document.getElementById('coachTitle').textContent = step.title;
+  document.getElementById('coachDesc').textContent = step.desc;
+  document.getElementById('coachCount').textContent = (coachIndex + 1) + '/' + total;
+  document.getElementById('coachNextBtn').textContent = (coachIndex === total - 1) ? 'Selesai' : 'Lanjut';
+
+  const targetEl = step.target ? document.getElementById(step.target) : null;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const cardW = 290;
+
+  if (targetEl && targetEl.offsetParent !== null){
+    const r = targetEl.getBoundingClientRect();
+    const pad = 8;
+    coachEls.highlight.style.display = 'block';
+    coachEls.highlight.style.left = (r.left - pad) + 'px';
+    coachEls.highlight.style.top = (r.top - pad) + 'px';
+    coachEls.highlight.style.width = (r.width + pad * 2) + 'px';
+    coachEls.highlight.style.height = (r.height + pad * 2) + 'px';
+
+    const spaceBelow = vh - r.bottom;
+    const cardTop = spaceBelow > 200 ? (r.bottom + pad + 10) : Math.max(16, r.top - pad - 10 - 160);
+    const cardLeft = Math.min(Math.max(16, r.left), vw - cardW - 16);
+    coachEls.card.style.top = cardTop + 'px';
+    coachEls.card.style.left = cardLeft + 'px';
+  } else {
+    coachEls.highlight.style.display = 'none';
+    coachEls.card.style.top = (vh / 2 - 110) + 'px';
+    coachEls.card.style.left = Math.max(16, (vw - cardW) / 2) + 'px';
+  }
+}
+
+function nextCoachStep(){
+  if (coachIndex >= coachSteps.length - 1){
+    endCoachTour();
+    return;
+  }
+  coachIndex++;
+  renderCoachStep();
+}
+
+function endCoachTour(){
+  if (!coachEls) return;
+  coachEls.dim.remove();
+  coachEls.highlight.remove();
+  coachEls.card.remove();
+  coachEls = null;
+}
+
+// ---------------------------------------------------------
+// TOMBOL BANTUAN (!) PER FIELD: popover kecil dekat tombol yang ditekan
+// ---------------------------------------------------------
+let activeHelpPopover = null;
+
+function showFieldHelp(btnEl, evt, text){
+  evt.stopPropagation();
+  // Jika popover sedang tampil di tombol yang sama, tutup (toggle)
+  if (activeHelpPopover && activeHelpPopover._btn === btnEl){
+    closeFieldHelp();
+    return;
+  }
+  closeFieldHelp();
+
+  const pop = document.createElement('div');
+  pop.className = 'help-popover';
+  pop.textContent = text;
+  document.body.appendChild(pop);
+  pop._btn = btnEl;
+
+  const r = btnEl.getBoundingClientRect();
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const popW = 240;
+  let left = r.left - 8;
+  left = Math.min(Math.max(12, left), vw - popW - 12);
+  const spaceBelow = vh - r.bottom;
+  const top = spaceBelow > 100 ? (r.bottom + 8) : (r.top - 8 - 90);
+
+  pop.style.left = left + 'px';
+  pop.style.top = top + 'px';
+
+  activeHelpPopover = pop;
+
+  setTimeout(() => { document.addEventListener('click', onOutsideHelpClick); }, 0);
+}
+
+function onOutsideHelpClick(e){
+  if (activeHelpPopover && !activeHelpPopover.contains(e.target) && e.target !== activeHelpPopover._btn){
+    closeFieldHelp();
+  }
+}
+
+function closeFieldHelp(){
+  if (activeHelpPopover){
+    activeHelpPopover.remove();
+    activeHelpPopover = null;
+  }
+  document.removeEventListener('click', onOutsideHelpClick);
 }
 
 function populateWilayah(data){
