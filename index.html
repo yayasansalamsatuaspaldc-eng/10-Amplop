@@ -232,10 +232,10 @@
   <div id="terpilihArea"></div>
 
   <div style="text-align:center; margin-bottom:6px;">
-    <button type="button" class="help-icon" style="background:var(--blue);" onclick="showFieldHelp(this, event, 'Tombol ini aktif setelah tepat 10 KK terpilih. Setelah submit berhasil, layar akan terkunci dan tidak bisa diubah lagi.')">!</button>
+    <button type="button" class="help-icon" style="background:var(--blue);" onclick="showFieldHelp(this, event, 'Tombol ini aktif setelah minimal 5 KK terpilih (maksimal 10 KK). Setelah submit berhasil, layar akan terkunci dan tidak bisa diubah lagi.')">!</button>
   </div>
   <button class="submit-btn" id="submitBtn" onclick="submitPilihan()" disabled>
-    Pilih tepat 10 KK untuk submit
+    Pilih minimal 5 KK untuk submit
   </button>
 </div>
 
@@ -248,7 +248,8 @@
 // ===========================================================
 const API_URL = 'https://script.google.com/macros/s/AKfycbxNHEyje-MrlAbOKIrDy8YRTJ4Jltmo3xdpL1_5dGgvF-KuEWfH31uc-xUVJhTmd19U_A/exec';
 
-const JUMLAH_WAJIB = 10;
+const JUMLAH_MIN_KK = 5;
+const JUMLAH_MAKS_KK = 10;
 let currentData = null;
 let selectedIds = new Set();
 let allItemsMap = {};
@@ -331,7 +332,7 @@ const coachSteps = [
   {
     target: null,
     title: 'Selamat Datang 👋',
-    desc: 'Halaman ini dipakai untuk memilih 10 KK Kel Alm yang akan menerima santunan bulan ini. Ikuti tur singkat berikut.'
+    desc: 'Halaman ini dipakai untuk memilih 5–10 KK Kel Alm yang akan menerima santunan bulan ini. Ikuti tur singkat berikut.'
   },
   {
     target: 'wilayahSelect',
@@ -350,13 +351,13 @@ const coachSteps = [
   },
   {
     target: null,
-    title: 'Pastikan Tepat 10 KK',
+    title: 'Pastikan Minimal 5 KK',
     desc: 'Bagian "KK Terpilih" menunjukkan siapa saja yang sudah dipilih. Ketuk ✕ untuk membatalkan salah satu pilihan.'
   },
   {
     target: 'submitBtn',
     title: 'Submit',
-    desc: 'Tombol ini aktif setelah tepat 10 KK terpilih. Setelah submit berhasil, layar akan terkunci dan tidak bisa diubah lagi.'
+    desc: 'Tombol ini aktif setelah minimal 5 KK terpilih (maksimal 10 KK). Setelah submit berhasil, layar akan terkunci dan tidak bisa diubah lagi.'
   }
 ];
 let coachIndex = 0;
@@ -701,7 +702,7 @@ function renderTerpilih(){
     + '</div>';
   }).join('');
 
-  area.innerHTML = '<div class="section-title terpilih">KK Terpilih (' + idsArray.length + '/' + JUMLAH_WAJIB + ')</div>'
+  area.innerHTML = '<div class="section-title terpilih">KK Terpilih (' + idsArray.length + '/' + JUMLAH_MAKS_KK + ')</div>'
     + '<div class="card">' + rows + '</div>';
 }
 
@@ -712,15 +713,15 @@ function escapeHtml(str){
 }
 
 // ---------------------------------------------------------
-// TOGGLE CHECKBOX + VALIDASI TEPAT 10
+// TOGGLE CHECKBOX + VALIDASI MINIMAL 5, MAKSIMAL 10
 // ---------------------------------------------------------
 function toggleItem(id){
   if (isLocked) return;
   if (selectedIds.has(id)){
     selectedIds.delete(id);
   } else {
-    if (selectedIds.size >= JUMLAH_WAJIB){
-      showToast('Sudah 10 KK terpilih. Hapus salah satu dulu untuk mengganti.', true);
+    if (selectedIds.size >= JUMLAH_MAKS_KK){
+      showToast('Maksimal ' + JUMLAH_MAKS_KK + ' KK terpilih. Hapus salah satu dulu untuk mengganti.', true);
       return;
     }
     selectedIds.add(id);
@@ -733,12 +734,12 @@ function toggleItem(id){
 function updateCounterAndButton(){
   const btn = document.getElementById('submitBtn');
   const count = selectedIds.size;
-  const ok = count === JUMLAH_WAJIB;
+  const ok = count >= JUMLAH_MIN_KK && count <= JUMLAH_MAKS_KK;
 
   btn.disabled = !ok;
   btn.textContent = ok
-    ? 'Submit ' + JUMLAH_WAJIB + ' KK Terpilih'
-    : 'Pilih tepat ' + JUMLAH_WAJIB + ' KK (' + count + '/' + JUMLAH_WAJIB + ')';
+    ? 'Submit ' + count + ' KK Terpilih'
+    : 'Pilih minimal ' + JUMLAH_MIN_KK + ' KK (' + count + '/' + JUMLAH_MIN_KK + ')';
 }
 
 // ---------------------------------------------------------
@@ -747,8 +748,8 @@ function updateCounterAndButton(){
 function submitPilihan(){
   if (isLocked) return;
   const wilayah = document.getElementById('wilayahSelect').value;
-  if (selectedIds.size !== JUMLAH_WAJIB){
-    showToast('Wajib tepat ' + JUMLAH_WAJIB + ' KK.', true);
+  if (selectedIds.size < JUMLAH_MIN_KK || selectedIds.size > JUMLAH_MAKS_KK){
+    showToast('Wajib memilih minimal ' + JUMLAH_MIN_KK + ' dan maksimal ' + JUMLAH_MAKS_KK + ' KK.', true);
     return;
   }
 
@@ -788,7 +789,7 @@ function submitPilihan(){
 
 // ---------------------------------------------------------
 // KUNCI LAYAR SETELAH SUBMIT SUKSES
-// Setelah pemilihan 10 KK berhasil disimpan, layar dikunci total:
+// Setelah pemilihan KK (5–10) berhasil disimpan, layar dikunci total:
 // tidak bisa ganti wilayah, ubah pilihan, atau submit ulang.
 // Satu-satunya cara "reset" adalah refresh/buka ulang halaman.
 // ---------------------------------------------------------
@@ -825,7 +826,7 @@ function showLockedScreen(wilayah, selectedNamesMap, message){
     + '</div>';
 
   document.getElementById('terpilihArea').innerHTML =
-    '<div class="section-title terpilih">' + JUMLAH_WAJIB + ' KK Terpilih (Terkunci)</div>'
+    '<div class="section-title terpilih">' + Object.keys(selectedNamesMap).length + ' KK Terpilih (Terkunci)</div>'
     + '<div class="card">' + rows + '</div>';
 
   const btn = document.getElementById('submitBtn');
