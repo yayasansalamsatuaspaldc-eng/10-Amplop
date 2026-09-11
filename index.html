@@ -495,10 +495,10 @@ function populateWilayah(data){
   console.log("Memuat data awal dari backend:", data);
 
   const sel = document.getElementById('wilayahSelect');
-  
+
   // Karena backend sekarang mengirim object, daftar wilayah ada di data.wilayahList
   const list = data.wilayahList || [];
-  
+
   list.forEach(w => {
     const opt = document.createElement('option');
     opt.value = w; opt.textContent = w;
@@ -507,17 +507,22 @@ function populateWilayah(data){
 
   // Simpan peta Nama Korwil per wilayah yang dikirim backend (dari spreadsheet Akun)
   korwilMap = data.korwilMap || {};
-  
+
   // Update UI: Ubah subtitle "Rotasi Santunan Amplop Bulanan" menjadi teks Periode secara instan
   const periodeLabel = document.getElementById('periodeLabel');
   if (data.periode) {
     periodeLabel.innerHTML = 'Periode Santunan: <strong style="color:var(--blue); font-size:14px;">' + data.periode + '</strong>';
   }
-  
-  // Fitur Tambahan UI: Memunculkan peringatan pop-up di bawah jika status sudah ditutup dari awal
+
+  // --- PERBAIKAN: Kunci total sejak awal kalau periode BUKAN OPEN ---
+  // Sebelumnya dropdown wilayah tetap bisa dipilih walau status CLOSE/CLOSED,
+  // dan baru terkunci setelah user memilih wilayah. Sekarang begitu status
+  // bukan OPEN, dropdown langsung dinonaktifkan sejak halaman dimuat.
   if (data.status && data.status !== 'OPEN') {
-     showToast('Info: Periode ' + data.periode + ' saat ini berstatus DITUTUP.', true);
+    showClosedScreen(null, data.periode);
+    return;
   }
+  // ------------------------------------------------------------------
 }
 
 function onError(err){
@@ -607,6 +612,10 @@ function onDataLoaded(data){
 function showClosedScreen(wilayah, periode){
   isLocked = true; // Mengunci agar fungsi onclick lain tidak berjalan
 
+  // Nonaktifkan dropdown wilayah juga, supaya user tidak bisa memilih
+  // wilayah sama sekali selama periode berstatus tidak OPEN.
+  document.getElementById('wilayahSelect').disabled = true;
+
   // Sembunyikan input korwil dan nonaktifkan tombol submit
   document.getElementById('korwilCard').style.display = 'none';
   document.getElementById('searchCard').style.display = 'none'; // Sembunyikan kotak pencarian
@@ -614,12 +623,16 @@ function showClosedScreen(wilayah, periode){
   btn.disabled = true;
   btn.textContent = 'Periode Ditutup';
 
+  const pesanWilayah = wilayah
+    ? 'Mohon maaf, pengisian data santunan wilayah <strong>' + escapeHtml(wilayah) + '</strong> untuk periode <strong>' + escapeHtml(periode) + '</strong> saat ini berstatus CLOSE (DITUTUP).'
+    : 'Mohon maaf, pengisian data santunan untuk periode <strong>' + escapeHtml(periode) + '</strong> saat ini berstatus CLOSE (DITUTUP).';
+
   // Tampilkan pesan peringatan berlogo gembok di area daftar nama
   document.getElementById('listArea').innerHTML =
     '<div class="card locked-screen">'
       + '<div class="icon">🔒</div>'
       + '<h2>Pengisian Santunan Ditutup</h2>'
-      + '<p>Mohon maaf, pengisian data santunan wilayah <strong>' + escapeHtml(wilayah) + '</strong> untuk periode <strong>' + escapeHtml(periode) + '</strong> saat ini berstatus CLOSE (DITUTUP).</p>'
+      + '<p>' + pesanWilayah + '</p>'
       + '<p>Silakan hubungi Admin jika Anda merasa ini adalah sebuah kesalahan.</p>'
     + '</div>';
 
