@@ -603,7 +603,15 @@ function onDataLoaded(data){
 
   document.getElementById('searchCard').style.display = 'block'; // Tampilkan kotak pencarian
   document.getElementById('searchInput').value = ''; // Reset/Bersihkan isi kotak jika ada ketikan lama
+
+  // --- Keluarga TANPA rekening otomatis terpilih (idOtomatis dari backend).
+  // Korwil tetap bisa menghapusnya lewat tombol ✕ di "KK Terpilih".
+  selectedIds = new Set(Array.isArray(data.idOtomatis) ? data.idOtomatis : []);
   renderList();
+  updateCounterAndButton();
+  if (selectedIds.size > 0){
+    showToast(selectedIds.size + ' KK tanpa rekening otomatis terpilih.');
+  }
 }
 
 // ---------------------------------------------------------
@@ -650,6 +658,18 @@ function renderList(){
   if (currentData.daftarUtama.length === 0 && currentData.daftarLanjutan.length === 0){
     area.innerHTML = '<div class="card"><div class="empty-msg">Tidak ada kel alm aktif di wilayah ini.</div></div>';
     return;
+  }
+
+  const gayaNote = 'font-size:12.5px;line-height:1.5;padding:10px 12px;border-radius:10px;margin-bottom:10px;background:#fef3c7;color:#92400e;';
+  if (currentData.idOtomatis && currentData.idOtomatis.length > 0){
+    html += '<div style="' + gayaNote + '">⚠ ' + currentData.idOtomatis.length
+      + ' KK <strong>tanpa nomor rekening</strong> otomatis terpilih (wajib amplop). '
+      + 'Hapus lewat tombol ✕ di bawah hanya jika memang perlu.</div>';
+  }
+  if (currentData.wajibMelebihiBatas){
+    html += '<div style="' + gayaNote + '">❗ Ada ' + currentData.jumlahWajib
+      + ' KK tanpa rekening, tetapi maksimal hanya ' + JUMLAH_MAKS_KK
+      + ' KK per bulan. Sisanya belum masuk bulan ini.</div>';
   }
 
   html += '<div class="section-title">Daftar Utama (belum pernah / paling lama tidak dapat)</div>';
