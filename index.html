@@ -187,6 +187,47 @@
     background:var(--amber); color:#fff; font-size:11px; font-weight:800;
     cursor:pointer; line-height:1; border:none; padding:0;
   }
+  .btn-rekap{
+    display:block; margin:0 auto 14px; padding:10px 20px; border:none; border-radius:14px;
+    background:var(--bg); box-shadow:var(--shadow-out);
+    font-size:13px; font-weight:800; color:var(--blue); cursor:pointer;
+  }
+  .btn-rekap:active{ box-shadow:var(--shadow-in); }
+  .rekap-overlay{
+    position:fixed; inset:0; z-index:3000; background:rgba(15,23,42,0.55);
+    display:none; align-items:center; justify-content:center; padding:16px;
+  }
+  .rekap-overlay.show{ display:flex; }
+  .rekap-box{
+    background:var(--bg); border-radius:20px; box-shadow:var(--shadow-out);
+    width:100%; max-width:460px; max-height:86vh; display:flex; flex-direction:column; padding:18px;
+  }
+  .rekap-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:4px; }
+  .rekap-head h2{ font-size:15px; font-weight:800; margin:0; }
+  .rekap-close{
+    border:none; background:var(--bg); box-shadow:var(--shadow-out); color:var(--text-label);
+    width:30px; height:30px; border-radius:50%; font-size:14px; font-weight:800; cursor:pointer;
+  }
+  .rekap-sub{ font-size:12px; color:var(--text-sub); margin-bottom:10px; }
+  .rekap-summary{
+    font-size:12.5px; font-weight:700; padding:10px 12px; border-radius:12px;
+    box-shadow:var(--shadow-in); margin-bottom:10px; line-height:1.5;
+  }
+  .rekap-list{ overflow-y:auto; }
+  .rekap-row{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:10px 4px; border-bottom:1px solid rgba(148,163,184,0.25);
+  }
+  .rekap-row:last-child{ border-bottom:none; }
+  .rekap-row .w{ font-size:13px; font-weight:700; }
+  .rekap-row .k{ font-size:11px; color:var(--text-faint); }
+  .rekap-row .n{ font-size:13px; font-weight:800; white-space:nowrap; }
+  .rekap-row .n.ok{ color:#16a34a; }
+  .rekap-row .n.belum{ color:#dc2626; }
+  .rekap-refresh{
+    margin-top:10px; padding:10px; border:none; border-radius:12px; background:var(--bg);
+    box-shadow:var(--shadow-out); font-size:12px; font-weight:800; color:var(--text-label); cursor:pointer;
+  }
   .help-popover{
     position:fixed; z-index:3100; background:#1e293b; color:#fff;
     border-radius:12px; padding:10px 12px; font-size:12px; line-height:1.5;
@@ -203,6 +244,7 @@
   <div style="text-align:center; margin-bottom:14px;">
     <span onclick="startCoachTour()" style="font-size:11.5px; font-weight:700; color:var(--blue); cursor:pointer; text-decoration:underline;">📖 Lihat tutorial cara pakai</span>
   </div>
+  <button type="button" class="btn-rekap" onclick="bukaRekapAmplop()">📊 Lihat Rekap Amplop</button>
 
   <div class="card">
     <label for="wilayahSelect">Pilih Wilayah
@@ -239,6 +281,18 @@
   </button>
 </div>
 
+<div class="rekap-overlay" id="rekapOverlay" onclick="if(event.target===this) tutupRekapAmplop()">
+  <div class="rekap-box">
+    <div class="rekap-head">
+      <h2>📊 Rekap Amplop per Wilayah</h2>
+      <button type="button" class="rekap-close" onclick="tutupRekapAmplop()" aria-label="Tutup">✕</button>
+    </div>
+    <div class="rekap-sub" id="rekapPeriode"></div>
+    <div id="rekapBody" class="rekap-list"></div>
+    <button type="button" class="rekap-refresh" onclick="muatRekapAmplop()">🔄 Muat ulang</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -252,6 +306,7 @@ const JUMLAH_MIN_KK = 5;
 const JUMLAH_MAKS_KK = 10;
 let currentData = null;
 let selectedIds = new Set();
+let wajibIds = new Set(); // KK tanpa rekening: wajib masuk amplop, tidak bisa dihapus
 let allItemsMap = {};
 let isLocked = false;
 let korwilMap = {}; // { WILAYAH: 'Nama Korwil' } — dikirim backend dari spreadsheet Akun
@@ -347,7 +402,7 @@ const coachSteps = [
   {
     target: null,
     title: 'Cari & Pilih Kel Alm',
-    desc: 'Daftar Kel Alm akan tampil lengkap dengan kotak pencarian. Ketuk nama atau centang kotaknya untuk memilih. Yang berlabel ⚠ Wajib Amplop harus diprioritaskan karena tidak punya rekening bank.'
+    desc: 'Daftar Kel Alm akan tampil lengkap dengan kotak pencarian. Ketuk nama atau centang kotaknya untuk memilih. Yang berlabel ⚠ Wajib Amplop (tidak punya rekening bank) otomatis terpilih dan tidak bisa dihapus.'
   },
   {
     target: null,
@@ -537,6 +592,7 @@ function onWilayahChange(){
   if (isLocked) return;
   const wilayah = document.getElementById('wilayahSelect').value;
   selectedIds = new Set();
+  wajibIds = new Set();
   allItemsMap = {};
   document.getElementById('korwilCard').style.display = wilayah ? 'block' : 'none';
   document.getElementById('searchCard').style.display = 'none'; // Sembunyikan pencarian saat loading/ganti wilayah
@@ -605,8 +661,9 @@ function onDataLoaded(data){
   document.getElementById('searchInput').value = ''; // Reset/Bersihkan isi kotak jika ada ketikan lama
 
   // --- Keluarga TANPA rekening otomatis terpilih (idOtomatis dari backend).
-  // Korwil tetap bisa menghapusnya lewat tombol ✕ di "KK Terpilih".
-  selectedIds = new Set(Array.isArray(data.idOtomatis) ? data.idOtomatis : []);
+  // WAJIB masuk amplop: dikunci, tidak bisa dihapus dari "KK Terpilih".
+  wajibIds = new Set(Array.isArray(data.idOtomatis) ? data.idOtomatis : []);
+  selectedIds = new Set(wajibIds);
   renderList();
   updateCounterAndButton();
   if (selectedIds.size > 0){
@@ -663,8 +720,7 @@ function renderList(){
   const gayaNote = 'font-size:12.5px;line-height:1.5;padding:10px 12px;border-radius:10px;margin-bottom:10px;background:#fef3c7;color:#92400e;';
   if (currentData.idOtomatis && currentData.idOtomatis.length > 0){
     html += '<div style="' + gayaNote + '">⚠ ' + currentData.idOtomatis.length
-      + ' KK <strong>tanpa nomor rekening</strong> otomatis terpilih (wajib amplop). '
-      + 'Hapus lewat tombol ✕ di bawah hanya jika memang perlu.</div>';
+      + ' KK <strong>tanpa nomor rekening</strong> otomatis terpilih (wajib amplop) dan tidak bisa dihapus.</div>';
   }
   if (currentData.wajibMelebihiBatas){
     html += '<div style="' + gayaNote + '">❗ Ada ' + currentData.jumlahWajib
@@ -731,7 +787,9 @@ function renderTerpilih(){
     return '<div class="item-terpilih">'
       + '<span class="no">' + (i + 1) + '.</span>'
       + '<span class="nama">' + escapeHtml(k.nama) + '</span>'
-      + '<button class="hapus" onclick="toggleItem(&quot;' + id + '&quot;)" title="Hapus dari pilihan">✕</button>'
+      + (wajibIds.has(id)
+          ? '<span class="badge-wajib" title="Tidak punya rekening — wajib masuk amplop">🔒 Wajib</span>'
+          : '<button class="hapus" onclick="toggleItem(&quot;' + id + '&quot;)" title="Hapus dari pilihan">✕</button>')
     + '</div>';
   }).join('');
 
@@ -746,11 +804,61 @@ function escapeHtml(str){
 }
 
 // ---------------------------------------------------------
+// REKAP JUMLAH AMPLOP PER WILAYAH (PERIODE BERJALAN)
+// Data diambil langsung dari backend setiap dibuka / dimuat ulang.
+// ---------------------------------------------------------
+function bukaRekapAmplop(){
+  document.getElementById('rekapOverlay').classList.add('show');
+  muatRekapAmplop();
+}
+
+function tutupRekapAmplop(){
+  document.getElementById('rekapOverlay').classList.remove('show');
+}
+
+function muatRekapAmplop(){
+  const body = document.getElementById('rekapBody');
+  document.getElementById('rekapPeriode').textContent = '';
+  body.innerHTML = '<div class="loading"><span class="spinner"></span>Memuat rekap...</div>';
+
+  apiGet('getRekapAmplop')
+    .then(function(d){
+      document.getElementById('rekapPeriode').innerHTML =
+        'Periode: <strong>' + escapeHtml(d.periode || '-') + '</strong>';
+
+      let html = '<div class="rekap-summary">'
+        + d.wilayahSudahIsi + ' dari ' + d.totalWilayah + ' wilayah sudah mengisi · '
+        + 'Total <strong>' + d.totalAmplop + ' amplop</strong></div>';
+
+      html += d.daftar.map(function(x){
+        const kanan = x.sudahIsi
+          ? '<span class="n ok">✅ ' + x.jumlah + ' amplop</span>'
+          : '<span class="n belum">⏳ Belum isi</span>';
+        const korwil = x.korwil ? '<div class="k">Korwil: ' + escapeHtml(x.korwil) + '</div>' : '';
+        return '<div class="rekap-row">'
+          + '<div><div class="w">' + escapeHtml(x.wilayah) + '</div>' + korwil + '</div>'
+          + kanan
+        + '</div>';
+      }).join('');
+
+      body.innerHTML = html;
+    })
+    .catch(function(err){
+      body.innerHTML = '';
+      showToast(err.message || 'Gagal memuat rekap.', true);
+    });
+}
+
+// ---------------------------------------------------------
 // TOGGLE CHECKBOX + VALIDASI MINIMAL 5, MAKSIMAL 10
 // ---------------------------------------------------------
 function toggleItem(id){
   if (isLocked) return;
   if (selectedIds.has(id)){
+    if (wajibIds.has(id)){
+      showToast('KK tanpa nomor rekening wajib masuk amplop, tidak bisa dihapus.', true);
+      return;
+    }
     selectedIds.delete(id);
   } else {
     if (selectedIds.size >= JUMLAH_MAKS_KK){
