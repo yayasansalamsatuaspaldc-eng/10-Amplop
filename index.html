@@ -214,11 +214,23 @@
     box-shadow:var(--shadow-in); margin-bottom:10px; line-height:1.5;
   }
   .rekap-list{ overflow-y:auto; }
+  .rekap-item{ border-bottom:1px solid rgba(148,163,184,0.25); }
+  .rekap-item:last-child{ border-bottom:none; }
   .rekap-row{
     display:flex; align-items:center; justify-content:space-between; gap:10px;
-    padding:10px 4px; border-bottom:1px solid rgba(148,163,184,0.25);
+    padding:10px 4px;
   }
-  .rekap-row:last-child{ border-bottom:none; }
+  .rekap-row.klik{ cursor:pointer; }
+  .rekap-row.klik:active{ opacity:.7; }
+  .rekap-row .panah{ display:inline-block; margin-left:6px; font-size:11px; color:var(--text-faint); transition:transform .15s ease; }
+  .rekap-item.buka .panah{ transform:rotate(180deg); }
+  .rekap-detail{
+    display:none; margin:0 0 10px; padding:10px 12px; border-radius:12px;
+    box-shadow:var(--shadow-in); font-size:12.5px; line-height:1.7;
+  }
+  .rekap-item.buka .rekap-detail{ display:block; }
+  .rekap-detail .baris{ display:flex; gap:8px; }
+  .rekap-detail .no{ color:var(--text-faint); min-width:20px; }
   .rekap-row .w{ font-size:13px; font-weight:700; }
   .rekap-row .k{ font-size:11px; color:var(--text-faint); }
   .rekap-row .n{ font-size:13px; font-weight:800; white-space:nowrap; }
@@ -812,6 +824,11 @@ function bukaRekapAmplop(){
   muatRekapAmplop();
 }
 
+function toggleRekapWilayah(i){
+  const el = document.getElementById('rekapItem' + i);
+  if (el) el.classList.toggle('buka');
+}
+
 function tutupRekapAmplop(){
   document.getElementById('rekapOverlay').classList.remove('show');
 }
@@ -830,14 +847,26 @@ function muatRekapAmplop(){
         + d.wilayahSudahIsi + ' dari ' + d.totalWilayah + ' wilayah sudah mengisi · '
         + 'Total <strong>' + d.totalAmplop + ' amplop</strong></div>';
 
-      html += d.daftar.map(function(x){
+      html += d.daftar.map(function(x, i){
         const kanan = x.sudahIsi
-          ? '<span class="n ok">✅ ' + x.jumlah + ' amplop</span>'
+          ? '<span class="n ok">✅ ' + x.jumlah + ' amplop<span class="panah">▼</span></span>'
           : '<span class="n belum">⏳ Belum isi</span>';
         const korwil = x.korwil ? '<div class="k">Korwil: ' + escapeHtml(x.korwil) + '</div>' : '';
-        return '<div class="rekap-row">'
-          + '<div><div class="w">' + escapeHtml(x.wilayah) + '</div>' + korwil + '</div>'
-          + kanan
+        const klik = x.sudahIsi ? ' klik" onclick="toggleRekapWilayah(' + i + ')' : '';
+        let detail = '';
+        if (x.sudahIsi){
+          detail = '<div class="rekap-detail">'
+            + (x.nama || []).map(function(n, j){
+                return '<div class="baris"><span class="no">' + (j + 1) + '.</span><span>' + escapeHtml(n) + '</span></div>';
+              }).join('')
+            + '</div>';
+        }
+        return '<div class="rekap-item" id="rekapItem' + i + '">'
+          + '<div class="rekap-row' + klik + '">'
+            + '<div><div class="w">' + escapeHtml(x.wilayah) + '</div>' + korwil + '</div>'
+            + kanan
+          + '</div>'
+          + detail
         + '</div>';
       }).join('');
 
