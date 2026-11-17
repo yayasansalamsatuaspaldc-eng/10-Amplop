@@ -318,7 +318,7 @@ const JUMLAH_MIN_KK = 5;
 const JUMLAH_MAKS_KK = 10;
 let currentData = null;
 let selectedIds = new Set();
-let wajibIds = new Set(); // KK tanpa rekening: wajib masuk amplop, tidak bisa dihapus
+let wajibIds = new Set(); // KK tanpa rekening / data baru: wajib masuk amplop, tidak bisa dihapus
 let allItemsMap = {};
 let isLocked = false;
 let korwilMap = {}; // { WILAYAH: 'Nama Korwil' } — dikirim backend dari spreadsheet Akun
@@ -414,7 +414,7 @@ const coachSteps = [
   {
     target: null,
     title: 'Cari & Pilih Kel Alm',
-    desc: 'Daftar Kel Alm akan tampil lengkap dengan kotak pencarian. Ketuk nama atau centang kotaknya untuk memilih. Yang berlabel ⚠ Wajib Amplop (tidak punya rekening bank) otomatis terpilih dan tidak bisa dihapus.'
+    desc: 'Daftar Kel Alm akan tampil lengkap dengan kotak pencarian. Ketuk nama atau centang kotaknya untuk memilih. Yang berlabel ⚠ Wajib Amplop (tanpa rekening bank, atau data baru) otomatis terpilih dan tidak bisa dihapus.'
   },
   {
     target: null,
@@ -679,7 +679,7 @@ function onDataLoaded(data){
   renderList();
   updateCounterAndButton();
   if (selectedIds.size > 0){
-    showToast(selectedIds.size + ' KK tanpa rekening otomatis terpilih.');
+    showToast(selectedIds.size + ' KK wajib amplop otomatis terpilih.');
   }
 }
 
@@ -732,11 +732,11 @@ function renderList(){
   const gayaNote = 'font-size:12.5px;line-height:1.5;padding:10px 12px;border-radius:10px;margin-bottom:10px;background:#fef3c7;color:#92400e;';
   if (currentData.idOtomatis && currentData.idOtomatis.length > 0){
     html += '<div style="' + gayaNote + '">⚠ ' + currentData.idOtomatis.length
-      + ' KK <strong>tanpa nomor rekening</strong> otomatis terpilih (wajib amplop) dan tidak bisa dihapus.</div>';
+      + ' KK <strong>tanpa nomor rekening / data baru</strong> otomatis terpilih (wajib amplop) dan tidak bisa dihapus.</div>';
   }
   if (currentData.wajibMelebihiBatas){
     html += '<div style="' + gayaNote + '">❗ Ada ' + currentData.jumlahWajib
-      + ' KK tanpa rekening, tetapi maksimal hanya ' + JUMLAH_MAKS_KK
+      + ' KK wajib amplop (tanpa rekening / data baru), tetapi maksimal hanya ' + JUMLAH_MAKS_KK
       + ' KK per bulan. Sisanya belum masuk bulan ini.</div>';
   }
 
@@ -765,7 +765,9 @@ function renderItems(items){
     const badgeStatus = k.lastLabel
       ? '<span class="badge-lama">Terakhir: ' + k.lastLabel + '</span>'
       : '<span class="badge-baru">Belum pernah</span>';
-    const badgeWajib = k.wajibAmplop ? '<span class="badge-wajib">⚠ Wajib Amplop</span>' : '';
+    const badgeWajib = k.wajibAmplop
+      ? '<span class="badge-wajib">' + (k.dataBaru ? '🆕 Data Baru · Wajib Amplop' : '⚠ Wajib Amplop') + '</span>'
+      : '';
     const badge = badgeWajib + badgeStatus;
     const metaParts = [];
     if (k.domisili) metaParts.push(k.domisili);
@@ -800,7 +802,7 @@ function renderTerpilih(){
       + '<span class="no">' + (i + 1) + '.</span>'
       + '<span class="nama">' + escapeHtml(k.nama) + '</span>'
       + (wajibIds.has(id)
-          ? '<span class="badge-wajib" title="Tidak punya rekening — wajib masuk amplop">🔒 Wajib</span>'
+          ? '<span class="badge-wajib" title="Tanpa rekening / data baru — wajib masuk amplop">🔒 Wajib</span>'
           : '<button class="hapus" onclick="toggleItem(&quot;' + id + '&quot;)" title="Hapus dari pilihan">✕</button>')
     + '</div>';
   }).join('');
@@ -885,7 +887,7 @@ function toggleItem(id){
   if (isLocked) return;
   if (selectedIds.has(id)){
     if (wajibIds.has(id)){
-      showToast('KK tanpa nomor rekening wajib masuk amplop, tidak bisa dihapus.', true);
+      showToast('KK tanpa nomor rekening / data baru wajib masuk amplop, tidak bisa dihapus.', true);
       return;
     }
     selectedIds.delete(id);
